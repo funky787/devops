@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build project and run tests
-        run: mvn clean verify
+        run: mvn -f devops/pom.xml clean verify
 
       - name: Create pipeline report
         if: always()
