@@ -45,11 +45,6 @@ jobs:
       - name: Send message to Telegram
         if: always()
         run: |
-          MESSAGE="Pipeline finished
-          Repo: $GITHUB_REPOSITORY
-          Branch: $GITHUB_REF_NAME
-          Status: ${{ job.status }}"
-
-          curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="$MESSAGE"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+           -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+           -d text="CI pipeline finished. Repo: $GITHUB_REPOSITORY, Branch: $GITHUB_REF_NAME, Status: ${{ job.status }}"
