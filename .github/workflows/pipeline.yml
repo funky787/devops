@@ -44,6 +44,7 @@ jobs:
 
       - name: Send message to Telegram
         if: always()
+        continue-on-error: true
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
