@@ -1,3 +1,4 @@
 # devops
-CI test change
-trigger pipeline
+## CI Pipeline
+
+This project uses GitHub Actions CI pipeline.
