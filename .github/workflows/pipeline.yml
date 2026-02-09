@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build project and run tests
-        run: mvn -f devops/pom.xml clean verify
+        run: mvn -f pom.xml clean verify
 
       - name: Create pipeline report
         if: always()
@@ -44,12 +44,8 @@ jobs:
 
       - name: Send message to Telegram
         if: always()
+        continue-on-error: true
         run: |
-          MESSAGE="Pipeline finished
-          Repo: $GITHUB_REPOSITORY
-          Branch: $GITHUB_REF_NAME
-          Status: ${{ job.status }}"
-
-          curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="$MESSAGE"
+            -d text="CI finished. Repo: $GITHUB_REPOSITORY, Branch: $GITHUB_REF_NAME, Status: ${{ job.status }}"
