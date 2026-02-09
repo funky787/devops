@@ -28,7 +28,7 @@ jobs:
       - name: Create pipeline report
         if: always()
         run: |
-          mkdir report
+          mkdir -p report
           echo "GitHub Actions pipeline report" > report/report.txt
           echo "Repository: $GITHUB_REPOSITORY" >> report/report.txt
           echo "Branch: $GITHUB_REF_NAME" >> report/report.txt
