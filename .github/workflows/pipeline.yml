@@ -1,0 +1,55 @@
+name: Java CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - dev
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build project and run tests
+        run: mvn clean verify
+
+      - name: Create pipeline report
+        if: always()
+        run: |
+          mkdir report
+          echo "GitHub Actions pipeline report" > report/report.txt
+          echo "Repository: $GITHUB_REPOSITORY" >> report/report.txt
+          echo "Branch: $GITHUB_REF_NAME" >> report/report.txt
+          echo "Commit: $GITHUB_SHA" >> report/report.txt
+          echo "Status: ${{ job.status }}" >> report/report.txt
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-report
+          path: report/report.txt
+
+      - name: Send message to Telegram
+        if: always()
+        run: |
+          MESSAGE="Pipeline finished
+          Repo: $GITHUB_REPOSITORY
+          Branch: $GITHUB_REF_NAME
+          Status: ${{ job.status }}"
+
+          curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="$MESSAGE"
