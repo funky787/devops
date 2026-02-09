@@ -1,3 +1,5 @@
+permissions:
+  contents: write
 name: Java CI Pipeline
 
 on:
@@ -42,10 +44,62 @@ jobs:
           name: pipeline-report
           path: report/report.txt
 
+      - name: Create Git tag
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          TAG="0.17.${GITHUB_RUN_NUMBER}"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+          
       - name: Send message to Telegram
         if: always()
         continue-on-error: true
         run: |
+          DATE="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          REPO="$GITHUB_REPOSITORY"
+          RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          COMMIT_URL="https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+
+          # PR info (только если это pull_request)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
+            BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+            PR_URL="https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
+            BRANCH_LINE="Ветки: ${HEAD_BRANCH} → ${BASE_BRANCH}"
+            PR_LINE="PR: #${PR_NUMBER} (${PR_URL})"
+          else
+            BRANCH_LINE="Ветка: ${GITHUB_REF_NAME}"
+            PR_LINE=""
+          fi
+
+          # Tag (если был создан в этом запуске)
+          if [ -n "${TAG}" ]; then
+            TAG_LINE="Версия (git tag): ${TAG}"
+          else
+            TAG_LINE="Версия (git tag): не создавалась"
+          fi
+
+          TEXT="ITHUB_DEVOPS_BOT
+          Новый выпуск изменений
+          Проект: ${REPO}
+          ${TAG_LINE}
+          Дата: ${DATE}
+
+          Информация о Git-репозитории
+          ${BRANCH_LINE}
+          Commit: ${GITHUB_SHA}
+          ${COMMIT_URL}
+
+          Pipeline
+          Run: ${GITHUB_RUN_ID}
+          ${RUN_URL}
+          Статус: ${{ job.status }}
+          ${PR_LINE}"
+
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="CI finished. Repo: $GITHUB_REPOSITORY, Branch: $GITHUB_REF_NAME, Status: ${{ job.status }}"
+            --data-urlencode text="$TEXT"
