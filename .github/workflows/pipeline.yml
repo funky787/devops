@@ -47,4 +47,4 @@ jobs:
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-           -d text="CI pipeline finished. Repo: $GITHUB_REPOSITORY, Branch: $GITHUB_REF_NAME, Status: ${{ job.status }}"
+           -d text="CI finished. Repo: $GITHUB_REPOSITORY, Branch: $GITHUB_REF_NAME, Status: ${{ job.status }}"
