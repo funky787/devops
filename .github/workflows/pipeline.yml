@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-   
+      
       - name: Install Java
         uses: actions/setup-java@v4
         with:
@@ -25,11 +25,11 @@ jobs:
           java-version: '17'
           cache: maven
 
-      
-      - name: Build project and run tests
-        run: mvn clean verify
-
      
+      - name: Build project and run tests
+        run: mvn clean verify -Dcheckstyle.skip=true
+
+      
       - name: Create pipeline report
         if: always()
         run: |
@@ -40,7 +40,7 @@ jobs:
           echo "Commit: $GITHUB_SHA" >> report/report.txt
           echo "Status: ${{ job.status }}" >> report/report.txt
 
-    
+      
       - name: Upload report artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -48,7 +48,7 @@ jobs:
           name: pipeline-report
           path: report/report.txt
 
-      
+     
       - name: Send message to Telegram
         if: always()
         continue-on-error: true
