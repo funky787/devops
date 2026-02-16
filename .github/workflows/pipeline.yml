@@ -53,12 +53,19 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          TEXT="CI Pipeline завершён
+         DATE=$(date '+%Y-%m-%d %H:%M:%S')
+         RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+         TEXT="Pipeline завершён
 
           Репозиторий: $GITHUB_REPOSITORY
           Ветка: $GITHUB_REF_NAME
-          Статус: ${{ job.status }}"
+          Дата: $DATE
+          Статус: ${{ job.status }}
 
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            --data-urlencode text="$TEXT"
+          Ссылка на запуск:
+          $RUN_URL"
+
+              curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              --data-urlencode text="$TEXT"
